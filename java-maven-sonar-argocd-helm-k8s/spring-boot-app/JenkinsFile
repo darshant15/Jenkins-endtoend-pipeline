@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'abhishekf5/maven-abhishek-docker-agent:v2'
+            image 'abhishekf5/maven-abhishek-docker-agent:v1'
             args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
@@ -29,16 +29,19 @@ pipeline {
         }
 
         stage('Static Code Analysis') {
-            steps {
-                withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
-                    sh '''
-                        cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
-                        mvn sonar:sonar \
-                          -Dsonar.projectKey=ultimate-cicd \
-                          -Dsonar.projectName=ultimate-cicd \
-                          -Dsonar.host.url=$SONAR_URL \
-                          -Dsonar.token=$SONAR_AUTH_TOKEN
-                    '''
+    steps {
+        withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
+            sh '''
+                cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
+                mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
+                  -Dsonar.projectKey=ultimate-cicd \
+                  -Dsonar.projectName=ultimate-cicd \
+                  -Dsonar.host.url=$SONAR_URL \
+                  -Dsonar.token=$SONAR_AUTH_TOKEN
+            '''
+        }
+    }
+}
                 }
             }
         }
